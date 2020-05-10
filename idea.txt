@@ -1,0 +1,26 @@
+Centered Signal Constellation
+    signal_point = cos(2*pi()*1000*t(1,n))*amplitude;
+    signal_point = sin(2*pi()*1000*t(1,n))*amplitude;
+
+Empirical tuning of carrier amplitude and bit interval
+1. This pair of values worked well (overall score Chris Rose score: ~800)
+bit_interval = 2;         % Carrier period
+amplitude = 7.04;         % Scaler on how much energy to use
+carriers: sin and cos at frequency 1000.
+
+Adaptive amplitude from energy budget
+1. Calculate the energy based on modulation scheme, based on bit interval, carrier function.
+2. Based on projected total energy use, calculate the amplitude scalar.
+Note: This makes sure that we use all of our energy, no more and no less.
+Observation: As long as we change amplitude/energy with respect to bit_interval, neither bit_interval nor ampltude affects the final score. In other words, we can transmit as fast as possible (by having small bit_interval but high power use--fast and hard) or we can transmit as slow as possible (long bit interval and low power--slow and steady).
+
+Choosing/optimizing how many bits to send in total
+1. Given a specific energy budget, find the balance between bits to send (N in the final score) and accuracy (cross entropy)
+
+Ack/Nack
+
+
+Adaptive frequency hopping
+Comment: Can be used as a 
+1. Observation: r_trans and r_reci does know what's going on with the noise. We can stop sending and analyze the noise.
+2. Since we have shown that 

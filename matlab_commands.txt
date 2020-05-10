@@ -1,0 +1,2 @@
+testing_ground_4_chris('test', 1,'group1',@send_yiheng,@reci_yiheng,'group2',@send_2,@reci_2)
+testing_ground_4_chris('test', 1,'group1',@send_yiheng_cheat,@reci_yiheng_cheat,'group2',@send_2,@reci_2)
