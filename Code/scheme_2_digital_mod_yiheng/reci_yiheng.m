@@ -13,8 +13,9 @@ signal_point = 0;
 new_bits = [];
 
 if isempty(data)
-    % data: [send_or_silent, silent_time_countdown, carrier_interval_countdown]
-    data = [0 1 0 0];
+    % data: [send_or_silent, silent_time_countdown, carrier_interval_countdown
+    % num_predictions_returned]
+    data = [0, 0, constants.bit_interval, 0];
     % Print initialization parameters
     fprintf("Receiver hyperparameters--------------\n");
     fprintf("Total bits to send: %d\nbit interval: %d\n",...
@@ -39,7 +40,7 @@ if data(1,1) == 0
             else
                 % Correlator receiver
                 wave = r_trans(n-constants.bit_interval:n);
-                carriers = modulation_scheme_1_yiheng(t(1,n-constants.bit_interval:n), 0, 1);
+                carriers = modulation_scheme(t(1,n-constants.bit_interval:n), 0, 1);
                 corr_receiver_out = carriers * wave';
                 % Distance-based decoding
                 [~, max_ind] = max(corr_receiver_out);

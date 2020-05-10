@@ -1,4 +1,4 @@
-function carriers=modulation_scheme_1_yiheng(t, i, all)
+function carriers=modulation_scheme(t, i, all)
 %%%
 % t: the time at which we should calculate our modulated signal
 % i: the index of our modulation scheme
@@ -10,10 +10,10 @@ function carriers=modulation_scheme_1_yiheng(t, i, all)
 %%%
 carriers = [];
 if i==1 || all
-    carriers = [carriers; sqrt(2)*cos(2*pi()*2000*t)];
+    carriers = [carriers; ones(size(t))];
 end
 if i==2 || all
-    carriers = [carriers; sqrt(2)*sin(2*pi()*2000*t)];        
+    carriers = [carriers; -ones(size(t))];
 end
 if ~all
     carriers = carriers(1);

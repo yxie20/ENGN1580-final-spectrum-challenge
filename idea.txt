@@ -3,10 +3,7 @@ Centered Signal Constellation
     signal_point = sin(2*pi()*1000*t(1,n))*amplitude;
 
 Empirical tuning of carrier amplitude and bit interval
-1. This pair of values worked well (overall score Chris Rose score: ~800)
-bit_interval = 2;         % Carrier period
-amplitude = 7.04;         % Scaler on how much energy to use
-carriers: sin and cos at frequency 1000.
+Note: See repo README.md
 
 Adaptive amplitude from energy budget
 1. Calculate the energy based on modulation scheme, based on bit interval, carrier function.
@@ -16,6 +13,7 @@ Observation: As long as we change amplitude/energy with respect to bit_interval,
 
 Choosing/optimizing how many bits to send in total
 1. Given a specific energy budget, find the balance between bits to send (N in the final score) and accuracy (cross entropy)
+2. Result/findings: If we consider the final result as the loss function, the loss the global maxima of the loss surface happens when we send all 10000 bits. In other words, the optimal strategy so far is to sed ALL bits provided. This is observed by empirical parameter tuning.
 
 Ack/Nack
 

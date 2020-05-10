@@ -1,9 +1,9 @@
 function [signal_point,data,msg] = send_yiheng(r_trans,r_reci,t,n,e,data,msg)
 
 %%%% GLOBAL VARIABLES
-% Fs = 25*10^(3);
-% t_max = 120;
-% loop_max = Fs*t_max+1 = 3000001;
+% constants.Fs = 25*10^(3);
+% constants.t_max = 120;
+% loop_max = constants.Fs*constants.t_max+1 = 3000001;
 
 %%%% INPUT VARIABLES
 % r_trans transcript of everything sent so far over the TRANSMITTER channel.
@@ -30,32 +30,31 @@ function [signal_point,data,msg] = send_yiheng(r_trans,r_reci,t,n,e,data,msg)
 
 
 % Constants
-bit_interval = 130;         % Carrier period
-num_bits_to_send = 10000;
-persistent sent_so_far
+import constants.*
+
 % Dynamic run-time initializations at first function call
 if isempty(data)
-    % Calculate amplitude based on bit_interval and total bits to send
-    % total energy = bit_interval * num_bits_to_send * amplitude
-    initial_e_tra = 1000000;
-    e_tra = 1000000;
-    safety_margin = 1;
-    amplitude = sqrt(safety_margin*initial_e_tra / (bit_interval*num_bits_to_send))
-    amplitude = 1
+    % Calculate amplitude based on constants.bit_interval and total bits to send
+    % total energy = constants.bit_interval * constants.num_bits_to_send * amplitude
+    amplitude = sqrt(constants.safety_margin*constants.initial_e_tra / ...
+        (constants.bit_interval*constants.num_bits_to_send));
     % Trunacte the msg bitstring
-    msg = msg(1:num_bits_to_send);
+    msg = msg(1:constants.num_bits_to_send);
     % Initialize scratchpad
-    send_or_silent = 0;
-    silent_time_countdown = 1;
-    carrier_interval_countdown = 0;
-    data = [send_or_silent, silent_time_countdown, ...
-    carrier_interval_countdown, amplitude];
+    % data = [send_or_silent, silent_time_countdown, ...
+    % carrier_interval_countdown, amplitude];
+    data = [0, 0, constants.bit_interval, amplitude];
+
+    % Check if parameters make sense and print warning messages
+    check_parameters();
+    % Print initialization parameters
+    fprintf("Sender hyperparameters--------------\n");
+    fprintf("Amplitude: %.2f\nTotal bits to send: %d\nbit interval: %d\n",...
+    amplitude, constants.num_bits_to_send, constants.bit_interval);
 end
 
 % Initializations
 signal_point = 0;
-
-
 
 % If no energy left OR ?? OR ??: Stay silent
 if e == 0 || r_trans(end,end) == 154 || r_reci(end,end) == 198
@@ -73,15 +72,18 @@ if data(1,1) == 0
             if data(1,3) > 1
                 data(1,3) = data(1,3) - 1;
             else
-                % After a carrier interval (bit_interval), start next
-                % bit_interval immediately
+                % After a carrier interval (constants.bit_interval), start next
+                % bit_interval immediately.
                 data(1,2) = 0;
-                data(1,3) = bit_interval;
+                data(1,3) = constants.bit_interval;
+                % Pop this msg out of the queue
                 if length(msg) >= 2
                     msg = msg(1,2:end);
-                else            % Finished sending. Remain silent forever.
+                else
+                     % Finished sending. Remain silent forever.
                     data(1) = 1;
                 end
+                
             end
         end
     else
@@ -91,31 +93,17 @@ if data(1,1) == 0
         % At the end of silent_time_countdown, start new carrier_inerval_countdown
         else
             data(1,2) = 0;
-            data(1,3) = bit_interval;
+            data(1,3) = constants.bit_interval;
         end
     end
 end
 end
 
-function carriers=modulation_scheme(t, i, all)
-%%%
-% t: the time at which we should calculate our modulated signal
-% i: the index of our modulation scheme
-% all: boolean, if true, return a list with ALL carrier signals at time t
-%   (only needed for receiver for code simplicity)
-% returns: a single carrier wave sample if argument all is 0; a list of carrier
-% sampels with each entry index correspond to carrier index i if all is 1
-% NOTE: returned carrier MUST be normalized to have unit energy
-%%%
-carriers = [];
-if i==1 || all
-    carriers = [carriers; cos(2*pi()*1000*t)];
-end
-if i==2 || all
-    carriers = [carriers; sin(2*pi()*1000*t)];        
-end
-if ~all
-    carriers = carriers(1);
-end
 
+function check_parameters()
+import constants.*
+if (2*constants.bit_interval*constants.num_bits_to_send) > constants.loop_max
+    fprintf("[WARNING] Bit interval %d is too long, will not finish sending %d bits in %d seconds",...
+            constants.bit_interval, constants.num_bits_to_send, constants.Fs);
+end
 end

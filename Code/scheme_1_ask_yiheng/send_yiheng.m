@@ -70,7 +70,7 @@ if data(1,1) == 0
     if data(1,2) <= 0
         % If carrier_interval_countdown is positive
         if data(1,3) >= 0
-            signal_point = data(1,4)*modulation_scheme_1_yiheng(t(1,n), msg(1,1)+1, 0);
+            signal_point = data(1,4)*modulation_scheme(t(1,n), msg(1,1)+1, 0);
             if data(1,3) > 1
                 data(1,3) = data(1,3) - 1;
             else
