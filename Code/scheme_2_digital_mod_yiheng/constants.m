@@ -8,6 +8,6 @@ classdef constants
         initial_e_tra = 1000000;    % Energy budget
         safety_margin = 0.99;       % Safety threshold for energy use
         % Hyperparameters
-        bit_interval = 1;           % Carrier period T (minimum should be 1)
+        bit_interval = 1;           % Carrier period T (minimum 1)
     end
 end

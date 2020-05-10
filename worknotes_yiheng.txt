@@ -13,7 +13,7 @@ Observation: As long as we change amplitude/energy with respect to bit_interval,
 
 Choosing/optimizing how many bits to send in total
 1. Given a specific energy budget, find the balance between bits to send (N in the final score) and accuracy (cross entropy)
-2. Result/findings: If we consider the final result as the loss function, the loss the global maxima of the loss surface happens when we send all 10000 bits. In other words, the optimal strategy so far is to sed ALL bits provided. This is observed by empirical parameter tuning.
+2. Result/findings: If we consider the final result as the loss function, the loss the global maxima of the loss surface happens when we send all 10000 bits. In other words, the optimal strategy so far is to send ALL bits provided. In the final score equation, N dominates while binary entropy doesn't change much for N ~= 10000 This is observed by empirical parameter tuning.
 
 Ack/Nack
 
