@@ -4,7 +4,10 @@ function [signal_point,data,new_bits] = reci_yiheng(r_reci,r_trans,t,n,e,data)
 % new_bits: an array of size 1x1 when we are ready to return the bit after
 % the carrier interval has finished. 1x0 empty array if we are within the
 % interval.
-
+% fprintf("reci")
+% n
+% r_trans(1:6)
+% r_reci(1:6)
 % Initializations
 persistent cnst 
 signal_point = 0;
@@ -14,14 +17,14 @@ new_bits = [];
 if isempty(data)
     % Initialize constants
     cnst = constants();
-    % data: [send_or_silent, silent_time_countdown, carrier_interval_countdown
+    % data: [send_or_stop, silent_time_countdown, carrier_interval_countdown
     % num_predictions_returned, bits_left_in_packet, packets_received];]
     data = [0, 0, cnst.bit_interval, ...
             0, cnst.bitstream_packet_size, 0];
     % Print initialization parameters
     fprintf("Receiver hyperparameters--------------\n");
-    fprintf("Total bits to send: %d\nbit interval: %d\nnumber of packets: %d\n",...
-    cnst.num_bits_to_send, cnst.bit_interval, cnst.total_num_packets);
+    fprintf("Total bits to send: %d\nbit interval: %d\nnumber of packets: %d\nResend Prob.: %.2f\nMin. Resend Prob.: %.2f\n",...
+    cnst.num_bits_to_send, cnst.bit_interval, cnst.total_num_packets, cnst.P_resend, cnst.min_P_resend);
 end
 
 % If no energy left OR we have made all predictions OR 
@@ -47,13 +50,17 @@ if data(1,1) == 0
                 wave = r_trans(n-cnst.bit_interval:n);
                 carriers = modulation_scheme(t(1,n-cnst.bit_interval:n), 0, 1);
                 corr_receiver_out = carriers * wave';
-                % Distance-based decoding
-                [~, max_ind] = max(corr_receiver_out);
-                new_bits = [max_ind-1];
-                % Control loops updates
-                data(1,3) = cnst.bit_interval; % Reset cnst.bit_interval_countdown
-                data(1,4) = data(1,4)+1;            % Increment num_predictions_returned
-                data(1,5) = data(1,5)-1;            % Decrement bits_left_in_packet
+                data(1,3) = cnst.bit_interval;      % Reset cnst.bit_interval_countdown
+                % Send ACK/NACK. If ACK, decode this bit. Else, wait for resend.
+%                 if ~(abs(corr_receiver_out(1,1)-corr_receiver_out(2,1)) < (2*cnst.resend_thresh))
+                if sum((corr_receiver_out-cnst.amplitude)>cnst.resend_thresh) < 2
+                    % Distance-based decoding
+                    [~, max_ind] = max(corr_receiver_out);
+                    new_bits = [max_ind-1];
+                    % Control loops updates
+                    data(1,4) = data(1,4)+1;            % Increment num_predictions_returned
+                    data(1,5) = data(1,5)-1;            % Decrement bits_left_in_packet
+                end
             end
         % We have sent all the bits in the current packet
         else

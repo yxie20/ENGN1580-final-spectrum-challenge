@@ -9,13 +9,14 @@ classdef constants
         % Global variables from Prof. Rose------------
         Fs = 25*10^(3);             % Sampling rate
         t_max = 120;                % Competition time
-        loop_max                    % Number of iterations
-        sigma = 10                  % Spectral height of Gaussian Noise
+        loop_max;                   % Number of iterations
+        sigma = 10;                 % Spectral height of Gaussian Noise
         % Energies------------------------------------
         initial_e_tra = 1000000;    % Energy budget
-        safety_margin = 0.9;        % Safety threshold for energy use
+        safety_margin = 0.95;       % [Tunable param] Safety threshold for energy use
+        amplitude;                  % Amplitude scalar for carriers
         % Hyperparameters-----------------------------
-        num_bits_to_send = 10000;   % Total number of bits we intend to send
+        num_bits_to_send = 10000;   % [Tunable param] Total number of bits we intend to send
         bit_interval = 1;           % Carrier period T (minimum 1)
         % For time hopping and silent intervals-------
         % This is random seed for silent time offset. We support sending 
@@ -24,56 +25,30 @@ classdef constants
         % Set to 1 if you want to send everything within the first few itreations.
         %  Otherwise we have a stair looking graph for correct bits sent.
         total_num_packets = 8;      % [Tunable param] How many packets we divide the total bitstream into.
-        silent_interval_length      % Average length of each silence interval
-        bitstream_packet_size
+        bitstream_packet_size;      % Number of bit in each packet.
+        silent_interval_length;     % Average length of each silence interval
         % For Ack/Nack--------------------------------
         P_resend = 0.2;             % [Tunable param] The probability of resending a bit. Must be in (0,0.5).
-        expected_total_bits_to_send % The total bits we expect to send (repeating bad ones)
-        resend_thresh               % Threshold distance away from signal point (in signal space) that will trigger bit resend (i.e. Nack threshold)
+        expected_total_bits_to_send;% The total bits we expect to send (counting the repetition of bad ones)
+        resend_thresh;              % Threshold distance away from signal point (in signal space) that will trigger bit resend (i.e. Nack threshold)
+        resend_interval;            % Besed on the Threshold, the interval in which we resend 
     end
     
     methods(Static)
         function this=constants()
             % Global Variables------------------------------
             this.loop_max = this.Fs*this.t_max;
-            % For time hopping and silent intervals--------
+            % For time hopping and silent intervals---------
             this.silent_interval_length = round(this.loop_max / (2*this.total_num_packets));
             this.bitstream_packet_size = round(this.num_bits_to_send / this.total_num_packets);
-            % For Ack/Nack---------------------------------
-            this.calc_amplitude();
-        end
-        function calc_amplitude()
-            %%%
-            % Goal:
-            %  Given the target resend probabiltiy (the parameter we can
-            %  tune), we iteratively calculate for the amplitude, resend_thresh
-            %  based on the followinginputs: 
-            %    initial_e_tra, sigma, safety_margin
-            % Outputs:
-            %    amplitude: the amplitude multiplier for carrier
-            %    resend_thresh: the threshold away from +/- energy such
-            %     that we decide to resend the bit
-            % Algorithm: Iterate until convergence, since an analytic
-            %  equation for CDF is hard to define.
-            %%%
-                        
-            resend_thresh = norminv(1-this.P_resend,0,10);  % Distance away from signal point
-
-            expected_total_bits_to_send = this.num_bits_to_send*sum(this.P_resend.^(0:7));
-            % Calculate amplitude based on cnst.bit_interval and total bits to send
-            % total energy = cnst.bit_interval * cnst.num_bits_to_send * amplitude^2
-            amplitude = sqrt(cnst.safety_margin*this.initial_e_tra / ...
+            % For Ack/Nack and energy calculations----------
+            this.resend_thresh = norminv(1-this.P_resend,0,10);  % Distance away from signal point
+            this.expected_total_bits_to_send = this.num_bits_to_send*sum(this.P_resend.^(0:7));
+            % Calculate amplitude by energy balance: total energy = cnst.bit_interval * cnst.num_bits_to_send * amplitude^2
+            this.amplitude = sqrt(this.safety_margin*this.initial_e_tra / ...
                 (this.bit_interval*this.expected_total_bits_to_send));
-
+            % For small P_
             
-            amplitude = sqrt(this.safety_margin*this.initial_e_tra / ...
-                (this.bit_interval*expected_total_bits_to_send));
-            % Iterate until total energy == initial_e_tra*safety_margin
-                
-            this.P_resend = P_resend;
-            this.amplitude = amplitude;
-            this.resend_thresh = resend_thresh;
-
         end
     end
 end

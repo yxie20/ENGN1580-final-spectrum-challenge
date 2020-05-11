@@ -2,11 +2,7 @@
 Final Project for ENGN1580  
 
 ### Folder Structure
-All code lives under `Code` folder.  
-Under `Code`, we have scheme\_#\_<description>\_<author>. They are identical copies of the
-entire standalone program. They are different strategies we have developed.  
-For your own work, starta a new folder under Code. You can build upon previous
-work by copying over another teammate's folder.  
+All code lives under `Code` folder. Under `Code`, we have scheme\_#\_<description>\_<author>. They are identical copies of the entire standalone program. They are different strategies we have developed. For your own work, starta a new folder under Code. You can build upon previous work by copying over another teammate's folder.  
 
 ### Modulation schemes
 Scheme 1: ASK, one rail. Sin and Cos functions at given freq.  

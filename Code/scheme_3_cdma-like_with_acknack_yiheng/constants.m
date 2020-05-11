@@ -13,10 +13,10 @@ classdef constants
         sigma = 10;                 % Spectral height of Gaussian Noise
         % Energies------------------------------------
         initial_e_tra = 1000000;    % Energy budget
-        safety_margin = 0.9;        % [Tunable param] Safety threshold for energy use
+        safety_margin = 0.95;       % [Tunable param] Safety threshold for energy use
         amplitude;                  % Amplitude scalar for carriers
         % Hyperparameters-----------------------------
-        num_bits_to_send = 10000;   % [Tunable param] Total number of bits we intend to send
+        num_bits_to_send = 2000;    % [Tunable param] Total number of bits we intend to send
         bit_interval = 1;           % Carrier period T (minimum 1)
         % For time hopping and silent intervals-------
         % This is random seed for silent time offset. We support sending 
@@ -28,9 +28,11 @@ classdef constants
         bitstream_packet_size;      % Number of bit in each packet.
         silent_interval_length;     % Average length of each silence interval
         % For Ack/Nack--------------------------------
-        P_resend = 0.2;             % [Tunable param] The probability of resending a bit. Must be in (0,0.5).
+        P_resend = 0.2;             % [Tunable param] The probability of resending a bit.
+        min_P_resend;               % P_resend must obey: min_P_resend < P_resend < 0.5
         expected_total_bits_to_send;% The total bits we expect to send (counting the repetition of bad ones)
         resend_thresh;              % Threshold distance away from signal point (in signal space) that will trigger bit resend (i.e. Nack threshold)
+        resend_interval;            % Besed on the Threshold, the interval in which we resend 
     end
     
     methods(Static)
@@ -41,11 +43,25 @@ classdef constants
             this.silent_interval_length = round(this.loop_max / (2*this.total_num_packets));
             this.bitstream_packet_size = round(this.num_bits_to_send / this.total_num_packets);
             % For Ack/Nack and energy calculations----------
-            this.resend_thresh = norminv(1-this.P_resend,0,10);  % Distance away from signal point
-            this.expected_total_bits_to_send = this.num_bits_to_send*sum(this.P_resend.^(0:7));
+            % Edge case: For small P_resend, it's possible the interval is 
+            %  flipped. Find the smallest P_resend and clip results if
+            %  P_resend is smaller yet.
             % Calculate amplitude by energy balance: total energy = cnst.bit_interval * cnst.num_bits_to_send * amplitude^2
-            this.amplitude = sqrt(this.safety_margin*this.initial_e_tra / ...
-                (this.bit_interval*this.expected_total_bits_to_send));
+            no_resend_amplitude = sqrt(this.safety_margin*this.initial_e_tra / ...
+                (this.bit_interval*this.num_bits_to_send));
+            this.min_P_resend = 1 - normcdf(no_resend_amplitude, 0, 10);
+            if this.P_resend < this.min_P_resend
+                this.P_resend = 0;
+                this.resend_thresh = 0;
+                this.expected_total_bits_to_send = this.num_bits_to_send;
+                this.amplitude = no_resend_amplitude;
+            else
+                % Calculate distance threshold based on P_resend
+                this.resend_thresh = norminv(1-this.P_resend,0,10);  % Distance away from signal point
+                this.expected_total_bits_to_send = this.num_bits_to_send*sum(this.P_resend.^(0:10));
+                this.amplitude = sqrt(this.safety_margin*this.initial_e_tra / ...
+                    (this.bit_interval*this.expected_total_bits_to_send));
+            end
         end
     end
 end
