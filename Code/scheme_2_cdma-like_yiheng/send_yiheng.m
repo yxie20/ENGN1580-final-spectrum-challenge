@@ -35,65 +35,69 @@ import constants.*
 % Dynamic run-time initializations at first function call
 if isempty(data)
     % Calculate amplitude based on constants.bit_interval and total bits to send
-    % total energy = constants.bit_interval * constants.num_bits_to_send * amplitude
+    % total energy = constants.bit_interval * constants.num_bits_to_send * amplitude^2
     amplitude = sqrt(constants.safety_margin*constants.initial_e_tra / ...
         (constants.bit_interval*constants.num_bits_to_send));
-    % Trunacte the msg bitstring
+    
+    % Trunacte the msg bitstring to however many we are intend to send
     msg = msg(1:constants.num_bits_to_send);
-    % Initialize scratchpad
-    % data = [send_or_silent, silent_time_countdown, ...
-    % carrier_interval_countdown, amplitude];
-    data = [0, 0, constants.bit_interval, amplitude];
 
+    % Initialize scratchpad
+    % data = [send_or_silent, silent_time_countdown, carrier_interval_countdown, amplitude, ...
+    %         bits_left_in_packet, packets_sent];
+    data = [0, 0, constants.bit_interval, amplitude, ...
+            constants.bitstream_packet_size, 0];
+    
     % Check if parameters make sense and print warning messages
     check_parameters();
+
     % Print initialization parameters
     fprintf("Sender hyperparameters--------------\n");
-    fprintf("Amplitude: %.2f\nTotal bits to send: %d\nbit interval: %d\n",...
-    amplitude, constants.num_bits_to_send, constants.bit_interval);
+    fprintf("Amplitude: %.2f\nTotal bits to send: %d\nbit interval: %d\nnumber of packets: %d\n",...
+    amplitude, constants.num_bits_to_send, constants.bit_interval, constants.bitstream_packet_size);
 end
 
 % Initializations
 signal_point = 0;
 
-% If no energy left OR ?? OR ??: Stay silent
-if e == 0 || r_trans(end,end) == 154 || r_reci(end,end) == 198
+% If no energy left OR we have sent everything, stop sending forever
+if e == 0 || data(1,6) == constants.total_num_packets
     data(1,1) = 1;
 end
 
-
 % If we are sending over the forward channel
-if data(1,1) == 0               
+if data(1,1) == 0
     % If silent_time_countdown is non-positive
     if data(1,2) <= 0
-        % If carrier_interval_countdown is positive
-        if data(1,3) >= 0
+        % If bits_left_in_packet is positive (we have more bits to send in the currnet packet.
+        if data(1,5) > 0
             signal_point = data(1,4)*modulation_scheme(t(1,n), msg(1,1)+1, 0);
+            % If carrier_interval_countdown is positive, keep sending
             if data(1,3) > 1
                 data(1,3) = data(1,3) - 1;
+            % If we have just finished modulating the current bit
             else
-                % After a carrier interval (constants.bit_interval), start next
-                % bit_interval immediately.
-                data(1,2) = 0;
-                data(1,3) = constants.bit_interval;
-                % Pop this msg out of the queue
-                if length(msg) >= 2
+                if length(msg) >= 2                 % Pop this msg out of the queue
                     msg = msg(1,2:end);
                 else
-                     % Finished sending. Remain silent forever.
-                    data(1) = 1;
+                    data(1) = 1;                    % Finished sending all bits, msg is not empty. Remain silent forever.
                 end
-                
+                % Control loops updates
+                data(1,3) = constants.bit_interval; % After a carrier interval (constants.bit_interval), start next bit_interval immediately.
+                data(1,5) = data(1,5)-1;            % Decrement the number of bits left in this packet
             end
+        % We have sent all the bits in the current packet
+        else
+            data(1,6) = data(1,6)+1;    % Increment the total number of packets sent
+            data(1,3) = 0;              % Reset carrier_interval_countdown to 0
+            data(1,2) = round(constants.silent_interval_length*(1+constants.silent_interval_offset(data(1,6))));  % Stay silent for constants.silent_interval_length + offset
         end
     else
-        % If we have silent_time_countdown left, remain silent and keep counting
-        if data(1,2) > 1
-            data(1,2) = data(1,2) - 1;
-        % At the end of silent_time_countdown, start new carrier_inerval_countdown
-        else
-            data(1,2) = 0;
-            data(1,3) = constants.bit_interval;
+        data(1,2) = data(1,2) - 1;                  % Decrement countdown
+        % At the end of silent_time_countdown
+        if data(1,2) == 0
+            data(1,3) = constants.bit_interval;             % start new carrier_inerval_countdown
+            data(1,5) = constants.bitstream_packet_size;    % reset bits_left_in_packet to constants.bitstream_packet_size
         end
     end
 end

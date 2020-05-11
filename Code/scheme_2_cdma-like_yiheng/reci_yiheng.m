@@ -14,16 +14,19 @@ new_bits = [];
 
 if isempty(data)
     % data: [send_or_silent, silent_time_countdown, carrier_interval_countdown
-    % num_predictions_returned]
-    data = [0, 0, constants.bit_interval, 0];
+    % num_predictions_returned, bits_left_in_packet, packets_received];]
+    data = [0, 0, constants.bit_interval, ...
+            0, constants.bitstream_packet_size, 0];
     % Print initialization parameters
     fprintf("Receiver hyperparameters--------------\n");
-    fprintf("Total bits to send: %d\nbit interval: %d\n",...
-    constants.num_bits_to_send, constants.bit_interval);
+    fprintf("Total bits to send: %d\nbit interval: %d\nnumber of packets: %d\n",...
+    constants.num_bits_to_send, constants.bit_interval, constants.bitstream_packet_size);
 end
 
+% If no energy left OR we have made all predictions OR 
+%  we have received all packets
 if e == 0 || data(1,4) == constants.num_bits_to_send || ...
-    r_trans(end,end) == 154 || r_reci(end,end) == 198
+        data(1,6) == constants.total_num_packets
     data(1,1) = 1;
 end
 
@@ -31,9 +34,10 @@ end
 if data(1,1) == 0
     % Similar to sender, if we are not in silent period
     if data(1,2) <= 0
-        % If we are within the carrier countdown interval 
-        if data(1,3) >= 0
-            if data(1,3)-1 > 0
+        % If bits_left_in_packet is positive (we have more bits to send in the currnet packet.
+        if data(1,5) > 0
+            % If we are within the carrier countdown interval 
+            if data(1,3) > 1
                 data(1,3) = data(1,3) - 1;
             % At the end of carrier period, we take all samples in the
             % previously elapsed carrier period.
@@ -45,23 +49,25 @@ if data(1,1) == 0
                 % Distance-based decoding
                 [~, max_ind] = max(corr_receiver_out);
                 new_bits = [max_ind-1];
-                % Reset constants.bit_interval_countdown
-                data(1,2) = 0;
-                data(1,3) = constants.bit_interval;
-                data(1,4) = data(1,4)+1;
+                % Control loops updates
+                data(1,3) = constants.bit_interval; % Reset constants.bit_interval_countdown
+                data(1,4) = data(1,4)+1;            % Increment num_predictions_returned
+                data(1,5) = data(1,5)-1;            % Decrement bits_left_in_packet
             end
+        % We have sent all the bits in the current packet
+        else
+            data(1,6) = data(1,6)+1;    % Increment the total number of packets received
+            data(1,3) = 0;              % Reset carrier_interval_countdown to 0
+            data(1,2) = round(constants.silent_interval_length*(1+constants.silent_interval_offset(data(1,6))));  % Stay silent for constants.silent_interval_length + offset
         end
     else
-        % Same as sender, if we have silent_time_countdown left, remain silent and keep counting
-        if data(1,2) > 1
-            data(1,2) = data(1,2) - 1;
-        % Same as sender, at the end of silent_time_countdown, start new carrier_inerval_countdown
-        else
-            data(1,2) = 0;
-            data(1,3) = constants.bit_interval;
+        data(1,2) = data(1,2) - 1;                  % Decrement countdown
+        % At the end of silent_time_countdown
+        if data(1,2) == 0
+            data(1,3) = constants.bit_interval;             % start new carrier_inerval_countdown
+            data(1,5) = constants.bitstream_packet_size;    % reset bits_left_in_packet to constants.bitstream_packet_size
         end
     end
 end
-
 end
 

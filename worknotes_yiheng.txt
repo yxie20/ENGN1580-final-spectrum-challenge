@@ -22,3 +22,5 @@ Adaptive frequency hopping
 Comment: Can be used as a 
 1. Observation: r_trans and r_reci does know what's going on with the noise. We can stop sending and analyze the noise.
 2. Since we have shown that 
+
+Try messing with global variables [cheat]
