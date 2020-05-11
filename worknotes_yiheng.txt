@@ -1,6 +1,6 @@
 Centered Signal Constellation
-    signal_point = cos(2*pi()*1000*t(1,n))*amplitude;
-    signal_point = sin(2*pi()*1000*t(1,n))*amplitude;
+signal_point = cos(2*pi()*1000*t(1,n))*amplitude;
+signal_point = sin(2*pi()*1000*t(1,n))*amplitude;
 
 Empirical tuning of carrier amplitude and bit interval
 Note: See repo README.md
