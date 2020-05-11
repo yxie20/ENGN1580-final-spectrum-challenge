@@ -5,7 +5,6 @@ function [signal_point,data,new_bits] = reci_yiheng(r_reci,r_trans,t,n,e,data)
 % the carrier interval has finished. 1x0 empty array if we are within the
 % interval.
 
-
 % Initializations
 persistent cnst 
 signal_point = 0;
@@ -22,7 +21,7 @@ if isempty(data)
     % Print initialization parameters
     fprintf("Receiver hyperparameters--------------\n");
     fprintf("Total bits to send: %d\nbit interval: %d\nnumber of packets: %d\n",...
-    cnst.num_bits_to_send, cnst.bit_interval, cnst.bitstream_packet_size);
+    cnst.num_bits_to_send, cnst.bit_interval, cnst.total_num_packets);
 end
 
 % If no energy left OR we have made all predictions OR 

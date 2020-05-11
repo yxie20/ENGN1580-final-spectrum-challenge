@@ -29,10 +29,6 @@ persistent cnst
 if isempty(data)
     % Initialize constants
     cnst = constants();
-    % Calculate amplitude based on cnst.bit_interval and total bits to send
-    % total energy = cnst.bit_interval * cnst.num_bits_to_send * amplitude^2
-    amplitude = sqrt(cnst.safety_margin*cnst.initial_e_tra / ...
-        (cnst.bit_interval*cnst.num_bits_to_send));
     
     % Trunacte the msg bitstring to however many we are intend to send
     msg = msg(1:cnst.num_bits_to_send);
@@ -40,7 +36,7 @@ if isempty(data)
     % Initialize scratchpad
     % data = [send_or_silent, silent_time_countdown, carrier_interval_countdown, amplitude, ...
     %         bits_left_in_packet, packets_sent];
-    data = [0, 0, cnst.bit_interval, amplitude, ...
+    data = [0, 0, cnst.bit_interval, cnst.amplitude, ...
             cnst.bitstream_packet_size, 0];
     
     % Check if parameters make sense and print warning messages
@@ -49,7 +45,7 @@ if isempty(data)
     % Print initialization parameters
     fprintf("Sender hyperparameters--------------\n");
     fprintf("Amplitude: %.2f\nTotal bits to send: %d\nbit interval: %d\nnumber of packets: %d\n",...
-    amplitude, cnst.num_bits_to_send, cnst.bit_interval, cnst.bitstream_packet_size);
+    cnst.amplitude, cnst.num_bits_to_send, cnst.bit_interval, cnst.total_num_packets);
 end
 
 % Initializations
