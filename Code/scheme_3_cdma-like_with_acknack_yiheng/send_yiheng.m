@@ -22,17 +22,21 @@ function [signal_point,data,msg] = send_yiheng(r_trans,r_reci,t,n,e,data,msg)
 % signal_point: next point in the transmitted waveform.
 % signal_point = a real number (i.e. a sample of 
 % data: updated scratchpad
-% fprintf("trans")
-% n
-% r_trans(1:6)
-% r_reci(1:6)
+
 persistent cnst 
 
+% Initializations
+signal_point = 0;
+
 % Dynamic run-time initializations at first function call
-if isempty(data)
+%%% todo: initial listen period
+if n==1
     % Initialize constants
     cnst = constants();
-    
+    %%% todo
+% %     initial_e_rec = e
+%     save initial_e_tra.dat e -ascii
+
     % Trunacte the msg bitstring to however many we are intend to send
     msg = msg(1:cnst.num_bits_to_send);
 
@@ -45,20 +49,34 @@ if isempty(data)
     % data(1,6) = total_packets_sent;       % int
     % data(1,7) = total_bits_sent;          % int
     % data(1,8) = is_first_bit_of_packet;   % boolean flag
+    % data(1,9) = resend_count;             % the number of times we have resent the current bit
     data = [0, 0, cnst.bit_interval, cnst.amplitude, ...
-            cnst.bitstream_packet_size, 0, 0, 1];
+            cnst.bitstream_packet_size, 0, 0, 1, 0];
     
     % Check if parameters make sense and print warning messages
     check_parameters();
 
     % Print initialization parameters
     fprintf("Sender hyperparameters--------------\n");
-    fprintf("Amplitude: %.2f\nTotal bits to send: %d\nbit interval: %d\nnumber of packets: %d\nResend Prob.: %.2f\nMin. Resend Prob.: %.2f\n",...
-    cnst.amplitude, cnst.num_bits_to_send, cnst.bit_interval, cnst.total_num_packets, cnst.P_resend, cnst.min_P_resend);
+    fprintf("Amplitude: %.2f\nTotal bits to send: %d\nbit interval: %d\nnumber of packets: %d\nResend Threshold: %.2f\n",...
+    cnst.amplitude, cnst.num_bits_to_send, cnst.bit_interval, cnst.total_num_packets, cnst.resend_thresh);
 end
 
-% Initializations
-signal_point = 0;
+% %%%
+% cnst.amplitude = 50;
+% if n > 2*cnst.bit_interval
+%     fprintf("trans")
+%     n
+%     data
+%     r_trans(1:10)
+%     % r_reci(1:6)
+%     n_start = n-cnst.bit_interval*2+1;
+%     wave = r_trans(n_start:n)
+%     carriers = modulation_scheme(t(1,n_start:n), 0, 1) % Here we assume a centered and symmetric signal constellation of 2 signal points
+%     corr_receiver_out = carriers * wave'
+%     sum((-cnst.resend_interval < corr_receiver_out)&(corr_receiver_out < cnst.resend_interval))
+% end
+%%%
 
 % If no energy left OR we have sent everything, stop sending forever
 if e == 0 || data(1,6) == cnst.total_num_packets
@@ -73,19 +91,26 @@ if data(1,1) == 0
         % ACK/NACK
         %%%
         if (data(1,3) == cnst.bit_interval) && (~data(1,8))
-            % Correlator receiver
-            wave = r_trans(n-cnst.bit_interval:n);
-            carriers = modulation_scheme(t(1,n-cnst.bit_interval:n), 0, 1); % Here we assume a centered and symmetric signal constellation of 2 signal points
+            data = [data r_trans(n-cnst.bit_interval:n-1)];
+            % Correlator receiver (we assume a centered and symmetric
+            % signal constellation of 2 signal points)
+            n_start = n-cnst.bit_interval*2+1;
+            wave = r_trans(n_start:n);
+            carriers = modulation_scheme(t(1,n_start:n), 0, 1); 
             corr_receiver_out = carriers * wave';
             % Check for ACK/NACK. If ACK, we are done with this bit. Else, resend the bit.
             %  The if statement checks if correlator output is more than
             %  const.resend_thresh away from BOTH signal points in signal space.
-            if sum((corr_receiver_out-cnst.amplitude)>cnst.resend_thresh) < 2
+            if (sum((-cnst.resend_interval < corr_receiver_out)&(corr_receiver_out < cnst.resend_interval)) < 2) ...
+                    || (data(1,9) >= cnst.max_resend)
                 data(1,5) = data(1,5)-1;    % Decrement the number of bits left in this packet
+                data(1,9) = 0;              % Reset the counter for resend_count
                 msg = msg(1,2:end);         % Pop this msg out of the queue
                 if isempty(msg)
                     data(1) = 1;            % Finished sending all bits, msg is now empty. Remain silent forever.
                 end
+            else
+                data(1,9) = data(1,9) + 1;
             end
         end
         
@@ -110,6 +135,9 @@ if data(1,1) == 0
             data(1,6) = data(1,6)+1;    % Increment the total number of packets sent
             data(1,3) = 0;              % Reset carrier_interval_countdown to 0
             data(1,2) = round(cnst.silent_interval_length*(1+cnst.silent_interval_offset(data(1,6))));  % Stay silent for cnst.silent_interval_length + offset
+            data(1:8)
+            save dat.mat data
+            
         end
         
     %%%
@@ -126,9 +154,9 @@ if data(1,1) == 0
     end
 end
 %%%
-if n > (cnst.loop_max - 2)
+if n > (cnst.loop_max - 3)
     msg
-    data
+    data(1:9)
 end
 end
 

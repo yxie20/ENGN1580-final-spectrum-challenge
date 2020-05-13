@@ -113,7 +113,7 @@ if strcmp(game_mode,'test')
     for i = 0:loop_max_out-1
 %     for i = 0:0
         for j = 1:loop_max_in
-%         for j = 1:6
+%         for j = 1:10
             if mod(j,2)
                 % Calling transmitter:
                 [signal_tra_1,new_scratchpad_tra_1,new_msg_1] = tra_1(r_tra,r_rec,t,i*loop_max_in+j,e_tra_1,scratchpad_tra_1,my_msg_1);

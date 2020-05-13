@@ -17,6 +17,12 @@ Choosing/optimizing how many bits to send in total
 
 Ack/Nack
 
+resent tolerance. Lower to 2 or 1 when we don't have enough energy to cover the rest. Receiver needs to keep track of energy budget of sender.
+
+
+Noise analyzation:
+
+Sit and observe the noise for a while. Then model its variance sigma.
 
 Adaptive frequency hopping
 Comment: Can be used as a 
@@ -24,3 +30,5 @@ Comment: Can be used as a
 2. Since we have shown that 
 
 Try messing with global variables [cheat]
+
+Observation: Since both sender and receiver 
