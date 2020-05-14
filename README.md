@@ -54,11 +54,11 @@ All other parameters are the same as Scheme 1
 `total bits to send = 70000`: Given a specific energy budget, find the balance between bits to send (N in the final score) and accuracy (cross entropy). We empirically found that the maximum score is achieved by sending 70000 bits as shown in figure below.
 
 <p align="center">
-  <img src="Report Images/param_tuning_N.png">
+  <img src="Report Images/param_tuning_N.png" width="200">
 </p>
 
 <p align="center">
-  <img width="200" src="Report Images/">
+  <img src="Report Images/" width="200">
 </p>
 
 #### Scheme 4
