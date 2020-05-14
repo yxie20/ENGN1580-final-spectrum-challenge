@@ -28,14 +28,10 @@ This is this most basic version. Not too different from Alberto's stencil.
 Observation: We noticed that as long as we change amplitude/energy with respect to bit_interval, neither bit_interval nor ampltude really affects the final score. In other words, we can transmit as fast as possible (by having small bit_interval but high power use--fast and hard) or we can transmit as slow as possible (long bit interval and low power--slow and steady).
 
 ##### Parameter tuning
-% [Tunable param] Carrier period. The shorter, the higher amplitude of our carriers (which decreases P_e), but shorter bit interval (which increases P_e)  
-`bit_interval = 2`  
-% Amplitude is scaled based on bit_interval to ensure we meet the power budget.  
-`amplitude = 7.04`  
-% [Tunable param] The more number of bits we send, the higher N is in our score, but also the higher P_e.  
-`total bits to send = 10000`  
-% [Tunable param] Carrier frequencies  
-`carriers frequency = 1000` for both sin and cos.  
+`bit_interval = 2`: Carrier period. The shorter, the higher amplitude of our carriers (which decreases P_e), but shorter bit interval (which increases P_e)  
+`amplitude = 7.04`: scaled based on bit_interval to ensure we meet the power budget.  
+`total bits to send = 10000`: the more number of bits we send, the higher N is in our score, but also the higher P_e.    
+`carriers frequency = 1000`: carrier frequencies for both sin and cos.  
 
 #### Scheme 2 CDMA-like (Baseband)
 Our carriers are simply positive and negative 1 times amplitude.
@@ -54,16 +50,25 @@ All other parameters are the same as Scheme 1
 ##### Features
 1. Channel noise modeling: During the silence period, we model the channel as a Gaussian random variable. We calculate the same standard deviaion and mean for Ack/Nack and energy calculations.
 
-2. Ack/Nack: We exploited the fact
+2. Ack/Nack: Assuming that the noise is additive, zero-mean, Gaussian white, we can model the decision process as a Bayes' classifer. We calcualted for empriical distribution and pdf, as well as empirical cdf and true cdf (for one specific set of parameters, just to show the process) shown below.
 
-Observation:
+<p align="center">
+  <img src="Report Images/pdf_cdf_channel.png" width="400">
+</p>
 
-3. Adaptive energy use with Ack/Nack: Based on the channel noise profile (mean and std), we dynamically adjust the following constants: `amplitude`, `resend_threshold`
+3.
+
+
+3. Adaptive energy use with Ack/Nack: Based on the channel noise profile (mean and std), we dynamically adjust the following constants: `amplitude`, `resend_threshold` while keeping the tunable parameter--probability of resend `P_resend`--consant.
+
+Explanation on the perfect feedback channel (uselessness of receiver channel): We exploited the fact that both sender and receiver have access to the identical copies of both channels. Hence, there is no information that receiver has that sender does not. This means that the sender cannot gain any **information** from the receiver (here we use the adult definition of information) by utilizing the receiver channel. Scrictly speaking, the only information receiver has that sender does not have is initla_e_rec, but since we are not using receiver channel, this information is useless.
 
 ##### Parameter tuning
 `P_resend = 0.35;`: The probability of resending a bit. The higher, the more likely we resend a bit (which lowers P_e), but lower the carrier amplitude as well since we have limited power budget (which increases P_e).  
 
-`total bits to send = 70000`: Given a specific energy budget, find the balance between bits to send (N in the final score) and accuracy (cross entropy). We empirically found that the maximum score is achieved by sending 70000 bits as shown in figure below. In other words, if we consider the final result as the loss function, and given the constraints, we can climb to the achievable highest point on the surface when `N = 70000`. See figure below.
+`total bits to send = 70000`: Given a specific energy budget, find the balance between bits to send (N in the final score) and accuracy (cross entropy). We empirically found that the maximum score is achieved by sending 70000 bits as shown in figure below. In other words, if we consider the final result as the loss function, and given the constraints, we can climb to the achievable highest point on the surface when `N = 70000`. See figures below or see interactive graph by running `Code/research_code/research_code_yiheng.mlx`.  
+
+All other parameters are the same as Scheme 1
 
 <p align="center">
   <img src="Report Images/param_tuning_N.png" width="400">
@@ -71,7 +76,7 @@ Observation:
 </p>
 
 <p align="center">
-  <img src="Report Images/" width="600">
+  <img src="Report Images/" width="400">
 </p>
 
 #### Scheme 4
