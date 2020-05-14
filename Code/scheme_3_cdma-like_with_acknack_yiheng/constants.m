@@ -24,7 +24,7 @@ classdef constants
         bits_sent_ratio;            % Fraction of bits sent
         energy_usage_ratio;         % Fraction of energy budget used
         % Hyperparameters-------------------------------------
-        num_bits_to_send = 10000;   % [Tunable param] Total number of bits we intend to send
+        num_bits_to_send = 80000;   % [Tunable param] Total number of bits we intend to send
         bit_interval = 1;           % Carrier period T (minimum 1)
         % For time hopping and silent intervals---------------
         % This is random seed for silent time offset. We support sending 
