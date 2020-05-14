@@ -5,6 +5,9 @@ signal_point = sin(2*pi()*1000*t(1,n))*amplitude;
 Empirical tuning of carrier amplitude and bit interval
 Note: See repo README.md
 
+Separating parameters into constants class
+1. Parameter tuning was greatly improved after separating parameters into constants class.
+
 Adaptive amplitude from energy budget
 1. Calculate the energy based on modulation scheme, based on bit interval, carrier function.
 2. Based on projected total energy use, calculate the amplitude scalar.
@@ -29,6 +32,9 @@ Comment: Can be used as a
 1. Observation: r_trans and r_reci does know what's going on with the noise. We can stop sending and analyze the noise.
 2. Since we have shown that 
 
-Try messing with global variables [cheat]
+Dynamically initialize constants based on channel noise profile
 
-Observation: Since both sender and receiver 
+Uselessness of receiver channel
+1. We chose not to use the feedback channel based on the following observation.
+2. Proof/Deduction: Since both sender and receiver have access to the identical copy in both channels, there is no information that receiver has that sender does not. This means that the sender cannot gain any information (here we use the adult definition of information) by utilizing the receiver channel.
+3. Note: technically, the only information receiver has that sender does not have is initla_e_rec, but since we are not using receiver channel, this information is useless.
