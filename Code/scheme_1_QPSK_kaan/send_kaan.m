@@ -5,7 +5,7 @@ new_data = data;
 new_msg = msg;
 
 if isempty(data)
-    data = [0 1000 0];
+    data = [0 1000 0 -5];
     new_data = data;
     r_trans = [0 0];
 end
@@ -17,17 +17,31 @@ end
 if data(1,1) == 0
     if data(1,2) <= 0
         if data(1,3) >= 0
+          if data(1,4) < 5 && data(1,4) >= 0
+              jammer = fft(r_trans);
+              data(1,4) = data(1,4) + 1;
+          end
+          if data(1,4) < 0
+              data(1,4) = data(1,4) + 1;
+          end
+          if data(1,4) == 5
+              data(1,4) = data(1,4) - 10;
+          end
             if msg(1,1) == 0
                 if msg(1,2) == 0
-                    signal_point = sin(2*pi()*2000*t(1,n))/1 + cos(2*pi()*2000*t(1,n))/1;
+                    signal_point = sin(2*pi()*2000*t(1,n))/1 + cos(2*pi()*2000*t(1,n))/1 + ...
+                    sin(2*pi()*jammer(1,1)*t(1,n))/1 + cos(2*pi()*jammer(1,2)*t(1,n))/1;
                 else
-                    signal_point = sin(2*pi()*2000*t(1,n))/1 + -1 * cos(2*pi()*2000*t(1,n))/1;
+                    signal_point = sin(2*pi()*2000*t(1,n))/1 + -1 * cos(2*pi()*2000*t(1,n))/1 + ...
+                        sin(2*pi()*jammer(1,1)*t(1,n))/1 + cos(2*pi()*jammer(1,2)*t(1,n))/1;
                 end  
             else
                 if msg(1,2) == 0
-                    signal_point = -1 * sin(2*pi()*2000*t(1,n))/1 - cos(2*pi()*2000*t(1,n))/1;
+                    signal_point = -1 * sin(2*pi()*2000*t(1,n))/1 - cos(2*pi()*2000*t(1,n))/1 + ...
+                        sin(2*pi()*jammer(1,1)*t(1,n))/1 + cos(2*pi()*jammer(1,2)*t(1,n))/1;
                 else
-                    signal_point = -1 * sin(2*pi()*2000*t(1,n))/1 + cos(2*pi()*2000*t(1,n))/1;
+                    signal_point = -1 * sin(2*pi()*2000*t(1,n))/1 + cos(2*pi()*2000*t(1,n))/1 + ...
+                        sin(2*pi()*jammer(1,1)*t(1,n))/1 + cos(2*pi()*jammer(1,2)*t(1,n))/1;
                 end
             end
             if data(1,3)-1 > 0

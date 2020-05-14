@@ -24,7 +24,7 @@ classdef constants
         bits_sent_ratio;            % Fraction of bits sent
         energy_usage_ratio;         % Fraction of energy budget used
         % Hyperparameters-------------------------------------
-        num_bits_to_send = 10000;   % [Tunable param] Total number of bits we intend to send
+        num_bits_to_send = 6000;   % [Tunable param] Total number of bits we intend to send
         bit_interval = 100;         % Carrier period T (minimum 1)
         % For time hopping and silent intervals---------------
         % This is random seed for silent time offset. We support sending 
@@ -36,7 +36,7 @@ classdef constants
         bitstream_packet_size;      % Number of bit in each packet.
         silent_interval;            % Average length of each silence interval
         % For source coding-----------------------------------
-        src_code_len = 4;           % [Tunable param] How many bits package as one codeword and represent by one signal point
+        src_code_len = 3;           % [Tunable param] How many bits package as one codeword and represent by one signal point
         spectrum_range = [100 2100];% [Empirically found] valid frequency range for our sampling rate
     end
     
