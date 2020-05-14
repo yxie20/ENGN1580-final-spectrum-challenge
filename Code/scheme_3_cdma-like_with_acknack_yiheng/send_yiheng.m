@@ -20,10 +20,10 @@ function [signal_point,data,msg] = send_yiheng(r_trans,r_reci,t,n,e,data,msg)
 % msg: updated bitstring paylond, decreases in size by 1 when bit sent
 % msg = 1x1000 vector; msg = 1x999 vector; ...
 % signal_point: next point in the transmitted waveform.
-% signal_point = a real number (i.e. a sample of 
+% signal_point = a real number (i.e. a sample of
 % data: updated scratchpad
 
-persistent cnst 
+persistent cnst
 
 % Initializations
 signal_point = 0;
@@ -36,7 +36,7 @@ if n == 1
     initial_e_tra = e;
     save msg_size.mat msg_size
     save initial_e_tra.mat initial_e_tra
-    
+
     % Initialize constants
     cnst = constants();
 
@@ -53,12 +53,12 @@ if n == 1
     % data(1,7) = is_first_bit_of_packet;   % boolean flag
     % data(1,8) = resend_count;             % the number of times we have resent the current bit
     % data(1,9) = silent_interval_start;    % value of n at the start of silent interval
-    
+
     data = [0, ...
-            round(cnst.silent_interval*(1+cnst.silent_interval_offset(1))), ... 
+            round(cnst.silent_interval*(1+cnst.silent_interval_offset(1))), ...
             0, ...
             cnst.bitstream_packet_size,0,0,1,0,1];
-    
+
     % Check if parameters make sense and print warning messages
     check_parameters();
 
@@ -83,12 +83,11 @@ if data(1,1) == 0
         % ACK/NACK
         %%%
         if (data(1,3) == cnst.bit_interval) && (~data(1,7))
-            data = [data r_trans(n-cnst.bit_interval:n-1)];
             % Correlator receiver (we assume a centered and symmetric
             % signal constellation of 2 signal points)
             n_start = n-cnst.bit_interval*2+1;
             wave = r_trans(n_start:n);
-            carriers = modulation_scheme(t(1,n_start:n), 0, 1); 
+            carriers = modulation_scheme(t(1,n_start:n), 0, 1);
             corr_receiver_out = carriers * wave';
             % Check for ACK/NACK. If ACK, we are done with this bit. Else, resend the bit.
             %  The if statement checks if correlator output is more than
@@ -105,7 +104,7 @@ if data(1,1) == 0
                 data(1,8) = data(1,8) + 1;
             end
         end
-        
+
         %%%
         % Send Bit
         %%%
@@ -128,12 +127,12 @@ if data(1,1) == 0
             data(1,3) = 0;              % Reset carrier_interval_countdown to 0
             data(1,2) = round(cnst.silent_interval*(1+cnst.silent_interval_offset(data(1,5)+1)));  % Start new silent interval countdown
             data(1,9) = n + 2;         % Record the start of silent interval
-        end 
+        end
     %%%
     % Silent interval
     %%%
     else
-        % If countdown is positive, do nothing. 
+        % If countdown is positive, do nothing.
         % Else, if we are at the end of silent_time_countdown
         if data(1,2) == 0
             % Dynamic initializations of constants based on channel noise profile

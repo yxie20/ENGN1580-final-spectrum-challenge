@@ -17,13 +17,13 @@ if ((i==1) || (all && (2^cnst.src_code_len > 1)))
     carriers = [carriers; sqrt(2)*sin(2*pi()*100*t)];
 end
 if ((i==2) || (all && (2^cnst.src_code_len > 2)))
-    carriers = [carriers; sqrt(2)*cos(2*pi()*2000*t)];
+    carriers = [carriers; sqrt(2)*cos(2*pi()*350*t)];
 end
 if ((i==3) || (all && (2^cnst.src_code_len > 3)))
-    carriers = [carriers; sqrt(2)*sin(2*pi()*2000*t)];
+    carriers = [carriers; sqrt(2)*sin(2*pi()*350*t)];
 end
 if ((i==4) || (all && (2^cnst.src_code_len > 4)))
-    carriers = [carriers; sqrt(2)*cos(2*pi()*750*t)];
+    carriers = [carriers; sqrt(2)*cos(2*pi()*0*t)];
 end
 if ((i==5) || (all && (2^cnst.src_code_len > 5)))
     carriers = [carriers; sqrt(2)*sin(2*pi()*750*t)];

@@ -1,3 +1,4 @@
+
 function [result] = testing_ground_final(game_mode,same_msg,name_group_1,name_tra_1,name_rec_1,name_group_2,name_tra_2,name_rec_2)
 
 clf('reset')

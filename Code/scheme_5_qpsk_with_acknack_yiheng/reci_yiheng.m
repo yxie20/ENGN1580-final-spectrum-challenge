@@ -21,18 +21,16 @@ if n==2
     % data(1,4) = bits_in_packet_countdown; % bits left in the packet to send
     % data(1,5) = packets_received;         % int
     % data(1,6) = total_bits_returned;      % Total number of new_bits returned
-    % data(1,7) = placeholder;
-    % data(1,8) = resend_count;             % int
-    % data(1,9) = silent_interval_start;    % value of n at the start of silent interval
+    % data(1,7) = silent_interval_start;    % value of n at the start of silent interval
     data = [0, ...
             round(cnst.silent_interval*(1+cnst.silent_interval_offset(1))), ... 
             0, ...
-            cnst.bitstream_packet_size,0,0,0,0,1];
+            cnst.bitstream_packet_size,0,0,1];
     
     % Print initialization parameters
     fprintf("Receiver hyperparameters (Yiheng)--------------\n");
-    fprintf("Total bits to send: %d\nbit interval: %d\nnumber of packets: %d\n",...
-    cnst.num_bits_to_send, cnst.bit_interval, cnst.total_num_packets);
+    fprintf("Total bits to send: %d\nbit interval: %d\nnumber of packets: %d\nsource codeword length: %d\n",...
+    cnst.num_bits_to_send, cnst.bit_interval, cnst.total_num_packets, cnst.src_code_len);
 end
 
 % If no energy left OR we have made all predictions OR 
@@ -57,39 +55,32 @@ if data(1,1) == 0
                 % Correlator receiver
                 n_start = n-cnst.bit_interval*2+1;
                 wave = r_trans(n_start:n);
-                carriers = modulation_scheme(t(1,n_start:n), 0, 1); 
+                carriers = modulation_scheme(t(1,n_start:n), 0, 1, cnst);
                 corr_receiver_out = carriers * wave';
                 data(1,3) = cnst.bit_interval;      % Reset cnst.bit_interval_countdown
-                % Send ACK/NACK. If ACK, decode this bit. Else, wait for resend.
-                if (max(corr_receiver_out) < cnst.resend_thresh) ...
-                        || (data(1,8) >= cnst.max_resend)
-                    % Correlator receiver (smae as above, but when decoding, we use all resent signal points)
-                    n_start = n-cnst.bit_interval*2*(1+data(1,8))+1;
-                    wave = r_trans(n_start:n);
-                    carriers = modulation_scheme(t(1,n_start:n), 0, 1); 
-                    corr_receiver_out = carriers * wave';
-                    % Distance-based decoding
-                    [~, max_ind] = max(corr_receiver_out);
-                    max_ind = max_ind-1;
-                    new_bits = zeros(1,cnst.src_code_len);
-                    for power = fliplr(1:(cnst.src_code_len))
-                        new_bits(power) = floor(max_ind/2^(power-1));
-                        max_ind = max_ind - 2^(power-1)*new_bits(power);
-                    end
-                    % Control loops updates
-                    data(1,6) = data(1,6)+cnst.src_code_len;  % Increment num_predictions_returned
-                    data(1,4) = data(1,4)-cnst.src_code_len;  % Decrement bits_left_in_packet
-                    data(1,8) = 0;                              % Reset the counter for resend_count
-                else
-                    data(1,8) = data(1,8) + 1;                  % Increment resend_count
+                % Distance-based decoding
+                [~, max_ind] = max(corr_receiver_out);
+                max_ind = max_ind-1;
+                new_bits = zeros(1,cnst.src_code_len);
+                disp("-------------------------");
+                size(corr_receiver_out)
+                for power = fliplr(1:(cnst.src_code_len))
+                    max_ind
+                    new_bits
+                    new_bits(power) = floor(max_ind/2^(power-1));
+                    max_ind = max_ind - 2^(power-1)*new_bits(power);
                 end
+                new_bits
+                % Control loops updates
+                data(1,6) = data(1,6)+cnst.src_code_len;  % Increment num_predictions_returned
+                data(1,4) = data(1,4)-cnst.src_code_len;  % Decrement bits_left_in_packet
             end
         % We have sent all the bits in the current packet
         else
             data(1,5) = data(1,5)+1;    % Increment the total number of packets received
             data(1,2) = round(cnst.silent_interval*(1+cnst.silent_interval_offset(data(1,5)+1)));  % Start new silent interval countdown
             data(1,3) = 0;              % Reset carrier_interval_countdown to 0
-            data(1,9) = n + 1;          % Record the start of silent interval
+            data(1,7) = n + 1;          % Record the start of silent interval
         end
     %%%
     % Silent interval
@@ -99,7 +90,7 @@ if data(1,1) == 0
         % Else, if we are at the end of silent_time_countdown
         if data(1,2) == 0
             % Dynamic initializations of constants based on channel noise profile
-            cnst = cnst.dynamic_initialization(r_trans, data(1,5), data(1,9),n-1);
+            cnst = cnst.dynamic_initialization(r_trans, data(1,5), data(1,7),n-1);
             data(1,3) = cnst.bit_interval;             % start new carrier_inerval_countdown
             data(1,4) = cnst.bitstream_packet_size;    % reset bits_left_in_packet to cnst.bitstream_packet_size
         end

@@ -19,30 +19,24 @@ classdef constants
         initial_e_tra;              % [Dynamic] Energy budget for sender
         msg_size;                   % [Dynamic] Total bits available to send
         % Energies--------------------------------------------
-        safety_margin = 0.95;       % [Tunable param] Safety threshold for energy use
+        safety_margin = 0.99;       % [Tunable param] Safety threshold for energy use
         amplitude;                  % Amplitude scalar for carriers
         bits_sent_ratio;            % Fraction of bits sent
         energy_usage_ratio;         % Fraction of energy budget used
         % Hyperparameters-------------------------------------
-        num_bits_to_send = 4000;   % [Tunable param] Total number of bits we intend to send
-        bit_interval = 40;         % Carrier period T (minimum 1)
+        num_bits_to_send = 2000;   % [Tunable param] Total number of bits we intend to send
+        bit_interval = 100;         % Carrier period T (minimum 1)
         % For time hopping and silent intervals---------------
         % This is random seed for silent time offset. We support sending 
         %  the entire bitstream in 100 "packets". 1x100 array range(-.5,0.5)
         silent_interval_offset = [-0.0438135345262580,-0.148829599221747,-0.202663428131696,-0.300607535770285,0.0276506782377569,-0.356336843187468,0.100274478734666,-0.267693739464320,0.212779774184266,-0.447157821908358,0.216046163406427,-0.376102918172107,0.145642187790661,0.221290068379167,-0.433732205370294,-0.224276131619455,0.123148465853195,0.391884567075949,0.331618846456591,-0.351121312554462,0.403195911922918,-0.296477141114719,0.237074462952851,-0.259943319240061,-0.0504900385373306,0.302734315468343,0.191132674466306,0.163412523060404,0.0386277123294072,0.466832746699551];
         % Set to 1 if you want to send everything within the first few itreations.
         %  Otherwise we have a stair looking graph for correct bits sent.
-        total_num_packets = 8;      % [Tunable param] How many packets we divide the total bitstream into.
+        total_num_packets = 16;      % [Tunable param] How many packets we divide the total bitstream into.
         bitstream_packet_size;      % Number of bit in each packet.
-        silent_interval;     % Average length of each silence interval
-        % For Ack/Nack----------------------------------------
-        P_resend = 0.35;            % [Tunable param] The probability of resending a bit.
-        expected_total_bits_to_send;% The total bits we expect to send (counting the repetition of bad ones)
-        resend_thresh;              % Threshold distance away from signal point (in signal space) that will trigger bit resend (i.e. Nack threshold)
-        resend_interval;            % Besed on the Threshold, the interval in which we resend 
-        max_resend = 3;             % [Tunable param] How many resends we allow in total
+        silent_interval;            % Average length of each silence interval
         % For source coding-----------------------------------
-        src_code_len = 2;        % [Tunable param] How many bits package as one codeword and represent by one signal point
+        src_code_len = 4;        % [Tunable param] How many bits package as one codeword and represent by one signal point
         
     end
     
@@ -64,13 +58,9 @@ classdef constants
             this.silent_interval = round(this.loop_max / (2*this.total_num_packets));
             this.bitstream_packet_size = floor(this.num_bits_to_send / ...
                 (this.total_num_packets * 2^this.src_code_len)) * 2^this.src_code_len;    % Ensure each packet divisible by 2^src_code_len
-            % For Ack/Nack and energy calculations------------------
-            % The expected total bits to send is the num_bits_to_send times
-            %  the expectation Geometric random variable with p = P_resend
-            this.expected_total_bits_to_send = this.num_bits_to_send*(1/(1-this.P_resend));
             % Calculate amplitude by energy balance: total energy = cnst.bit_interval * cnst.num_bits_to_send * amplitude^2
             this.amplitude = sqrt(this.safety_margin*this.initial_e_tra / ...
-                (this.bit_interval*this.expected_total_bits_to_send));
+                (this.bit_interval*this.num_bits_to_send/this.src_code_len));
         end
     end
     methods
@@ -100,26 +90,6 @@ classdef constants
             if abs(this.noise_std - 10) < 1
                 this.noise_std = 10;            % Assume sigma was not changed
             end
-            
-            % Step 2: Scale amplitude to meet energy budget (only when transmitter calls this script)
-            load e_tra.mat e_tra
-            this.bits_sent_ratio = num_packets_sent / this.total_num_packets;
-            this.energy_usage_ratio = 1 - min(1, e_tra / (this.safety_margin * this.initial_e_tra));
-            this.amplitude = this.amplitude * (1-this.energy_usage_ratio)/(1-this.bits_sent_ratio);
-
-            % Step 3: From P_resend calculate the resend_thresh 
-            % iteratively, since an analytic equation for cdf is difficult to define.
-            resend_thresh_guess = norminv(1-this.P_resend,0,this.noise_std);    % Always an underestimate of threshold
-            P_resend_guess = normcdf(2*this.amplitude-resend_thresh_guess,0,this.noise_std) - normcdf(resend_thresh_guess,0,this.noise_std);
-            diff = P_resend_guess - this.P_resend;
-            while abs(diff) > 0.001
-                resend_thresh_guess = resend_thresh_guess + diff*this.noise_std;
-                P_resend_guess = normcdf(2*this.amplitude-resend_thresh_guess,0,this.noise_std) - normcdf(resend_thresh_guess,0,this.noise_std);
-                diff = P_resend_guess - this.P_resend;
-            end
-            this.resend_thresh = resend_thresh_guess;
-            this.resend_interval = this.amplitude - this.resend_thresh;
-
         end
     end
 end
