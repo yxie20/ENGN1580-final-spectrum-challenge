@@ -58,7 +58,7 @@ All other parameters are the same as Scheme 1
 </p>
 
 <p align="center">
-  <img src="Report Images/">
+  <img scale="0.25" src="Report Images/">
 </p>
 
 #### Scheme 4
