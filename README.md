@@ -66,8 +66,8 @@ Observation:
 `total bits to send = 70000`: Given a specific energy budget, find the balance between bits to send (N in the final score) and accuracy (cross entropy). We empirically found that the maximum score is achieved by sending 70000 bits as shown in figure below. In other words, if we consider the final result as the loss function, and given the constraints, we can climb to the achievable highest point on the surface when `N = 70000`. See figure below.
 
 <p align="center">
-  <img src="Report Images/param_tuning_N.png" width="600">
-  <img src="Report Images/score_formula.png" width="600">
+  <img src="Report Images/param_tuning_N.png" width="400">
+  <img src="Report Images/score_formula.png" width="400">
 </p>
 
 <p align="center">
