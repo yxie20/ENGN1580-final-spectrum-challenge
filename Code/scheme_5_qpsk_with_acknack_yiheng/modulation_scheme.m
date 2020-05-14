@@ -9,55 +9,56 @@ function carriers=modulation_scheme(t, i, all, cnst)
 % NOTE: returned carrier MUST be normalized to have unit energy
 % NOTE: Even though we have 16 signal points here, it's okay if some of
 %  them are not used.%%%
+interval = (cnst.spectrum_range(2)-cnst.spectrum_range(1))/(2^(cnst.src_code_len-1)-1);
 carriers = [];
 if ((i==0) || (all && (2^cnst.src_code_len > 0)))
-    carriers = [carriers; sqrt(2)*cos(2*pi()*100*t)];
+    carriers = [carriers; sqrt(2)*cos(2*pi()*(cnst.spectrum_range(1)+interval*0)*t)];
 end
 if ((i==1) || (all && (2^cnst.src_code_len > 1)))
-    carriers = [carriers; sqrt(2)*sin(2*pi()*100*t)];
+    carriers = [carriers; sqrt(2)*sin(2*pi()*(cnst.spectrum_range(1)+interval*0)*t)];
 end
 if ((i==2) || (all && (2^cnst.src_code_len > 2)))
-    carriers = [carriers; sqrt(2)*cos(2*pi()*2000*t)];
+    carriers = [carriers; sqrt(2)*cos(2*pi()*(cnst.spectrum_range(1)+interval*1)*t)];
 end
 if ((i==3) || (all && (2^cnst.src_code_len > 3)))
-    carriers = [carriers; sqrt(2)*sin(2*pi()*2000*t)];
+    carriers = [carriers; sqrt(2)*sin(2*pi()*(cnst.spectrum_range(1)+interval*1)*t)];
 end
 if ((i==4) || (all && (2^cnst.src_code_len > 4)))
-    carriers = [carriers; sqrt(2)*cos(2*pi()*750*t)];
+    carriers = [carriers; sqrt(2)*cos(2*pi()*(cnst.spectrum_range(1)+interval*2)*t)];
 end
 if ((i==5) || (all && (2^cnst.src_code_len > 5)))
-    carriers = [carriers; sqrt(2)*sin(2*pi()*750*t)];
+    carriers = [carriers; sqrt(2)*sin(2*pi()*(cnst.spectrum_range(1)+interval*2)*t)];
 end
 if ((i==6) || (all && (2^cnst.src_code_len > 6)))
-    carriers = [carriers; sqrt(2)*cos(2*pi()*1400*t)];
+    carriers = [carriers; sqrt(2)*cos(2*pi()*(cnst.spectrum_range(1)+interval*3)*t)];
 end
 if ((i==7) || (all && (2^cnst.src_code_len > 7)))
-    carriers = [carriers; sqrt(2)*sin(2*pi()*1400*t)];
+    carriers = [carriers; sqrt(2)*sin(2*pi()*(cnst.spectrum_range(1)+interval*3)*t)];
 end
 
 if ((i==8) || (all && (2^cnst.src_code_len > 8)))
-    carriers = [carriers; sqrt(2)*cos(2*pi()*425*t)];
+    carriers = [carriers; sqrt(2)*cos(2*pi()*(cnst.spectrum_range(1)+interval*4)*t)];
 end
 if ((i==9) || (all && (2^cnst.src_code_len > 9)))
-    carriers = [carriers; sqrt(2)*sin(2*pi()*425*t)];
+    carriers = [carriers; sqrt(2)*sin(2*pi()*(cnst.spectrum_range(1)+interval*4)*t)];
 end
 if ((i==10) || (all && (2^cnst.src_code_len > 10)))
-    carriers = [carriers; sqrt(2)*cos(2*pi()*1000*t)];
+    carriers = [carriers; sqrt(2)*cos(2*pi()*(cnst.spectrum_range(1)+interval*5)*t)];
 end
 if ((i==11) || (all && (2^cnst.src_code_len > 11)))
-    carriers = [carriers; sqrt(2)*sin(2*pi()*1000*t)];
+    carriers = [carriers; sqrt(2)*sin(2*pi()*(cnst.spectrum_range(1)+interval*5)*t)];
 end
 if ((i==12) || (all && (2^cnst.src_code_len > 12)))
-    carriers = [carriers; sqrt(2)*cos(2*pi()*1700*t)];
+    carriers = [carriers; sqrt(2)*cos(2*pi()*(cnst.spectrum_range(1)+interval*6)*t)];
 end
 if ((i==13) || (all && (2^cnst.src_code_len > 13)))
-    carriers = [carriers; sqrt(2)*sin(2*pi()*1700*t)];
+    carriers = [carriers; sqrt(2)*sin(2*pi()*(cnst.spectrum_range(1)+interval*6)*t)];
 end
 if ((i==14) || (all && (2^cnst.src_code_len > 14)))
-    carriers = [carriers; sqrt(2)*cos(2*pi()*2300*t)];
+    carriers = [carriers; sqrt(2)*cos(2*pi()*(cnst.spectrum_range(1)+interval*7)*t)];
 end
 if ((i==15) || (all && (2^cnst.src_code_len > 15)))
-    carriers = [carriers; sqrt(2)*sin(2*pi()*2300*t)];
+    carriers = [carriers; sqrt(2)*sin(2*pi()*(cnst.spectrum_range(1)+interval*7)*t)];
 end
 
 if ~all

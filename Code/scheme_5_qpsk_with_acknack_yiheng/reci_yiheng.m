@@ -62,15 +62,10 @@ if data(1,1) == 0
                 [~, max_ind] = max(corr_receiver_out);
                 max_ind = max_ind-1;
                 new_bits = zeros(1,cnst.src_code_len);
-                disp("-------------------------");
-                size(corr_receiver_out)
                 for power = fliplr(1:(cnst.src_code_len))
-                    max_ind
-                    new_bits
                     new_bits(power) = floor(max_ind/2^(power-1));
                     max_ind = max_ind - 2^(power-1)*new_bits(power);
                 end
-                new_bits
                 % Control loops updates
                 data(1,6) = data(1,6)+cnst.src_code_len;  % Increment num_predictions_returned
                 data(1,4) = data(1,4)-cnst.src_code_len;  % Decrement bits_left_in_packet
