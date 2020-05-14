@@ -148,7 +148,7 @@ if data(1,1) == 0
     data(1,2) = data(1,2) - 1;                      % Decrement silent interval countdown
 end
 
-if n > cnst.loop_max - 2
+if n >= cnst.loop_max - 2
     delete *.mat
 end
 end

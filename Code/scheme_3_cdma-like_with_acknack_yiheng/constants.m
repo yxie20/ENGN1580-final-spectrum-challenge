@@ -24,7 +24,7 @@ classdef constants
         bits_sent_ratio;            % Fraction of bits sent
         energy_usage_ratio;         % Fraction of energy budget used
         % Hyperparameters-------------------------------------
-        num_bits_to_send = 8000;    % [Tunable param] Total number of bits we intend to send
+        num_bits_to_send = 10000;   % [Tunable param] Total number of bits we intend to send
         bit_interval = 1;           % Carrier period T (minimum 1)
         % For time hopping and silent intervals---------------
         % This is random seed for silent time offset. We support sending 
@@ -36,7 +36,7 @@ classdef constants
         bitstream_packet_size;      % Number of bit in each packet.
         silent_interval;     % Average length of each silence interval
         % For Ack/Nack----------------------------------------
-        P_resend = 0.3;             % [Tunable param] The probability of resending a bit.
+        P_resend = 0.35;            % [Tunable param] The probability of resending a bit.
         expected_total_bits_to_send;% The total bits we expect to send (counting the repetition of bad ones)
         resend_thresh;              % Threshold distance away from signal point (in signal space) that will trigger bit resend (i.e. Nack threshold)
         resend_interval;            % Besed on the Threshold, the interval in which we resend 
