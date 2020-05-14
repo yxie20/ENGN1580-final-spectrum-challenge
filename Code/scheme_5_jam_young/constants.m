@@ -39,7 +39,7 @@ classdef constants
         src_code_len = 4;           % [Tunable param] How many bits package as one codeword and represent by one signal point
         spectrum_range = [100 2100];% [Empirically found] valid frequency range for our sampling rate
         frequency_increment_interval = 285.7143;
-        jamming_ratio = 0.2;        % percent of energy we want to dedicate to jamming
+        jamming_ratio = 0.3;        % percent of energy we want to dedicate to jamming
 
     end
     

@@ -103,14 +103,22 @@ if data(1,1) == 0
             else                          % odd index, sine.
                 frequency = cnst.spectrum_range(1) + cnst.frequency_increment_interval * (codeword_index + 1);
             end
-            % Jam max powered freq if not within 300Hz. Otherwise jam second max.
-            if abs(max_power_frequencies(1) - frequency) >= 300 
-                jamming_signal = sin(2*pi()*max_power_frequencies(1)*t(n))
+            % Jam max powered freq if not within 300Hz.
+            if abs(max_power_frequencies(1) - frequency) >= 300
+               if mod(codeword_index,2) == 1 % even index, cosine.
+                jamming_signal = cos(2*pi()*max_power_frequencies(1)*t(n));
+               else
+                jamming_signal = sin(2*pi()*max_power_frequencies(1)*t(n));
+               end
+            % jam on the second highest power frequency 
             else
-                jamming_signal = sin(2*pi()*max_power_frequencies(2)*t(n))
+                if mod(codeword_index,2) == 1 % even index, cosine.
+                jamming_signal = cos(2*pi()*max_power_frequencies(2)*t(n));
+               else
+                jamming_signal = sin(2*pi()*max_power_frequencies(2)*t(n));
+               end
             end
             
-
             signal_point = cnst.amplitude*modulation_scheme(t(n), codeword_index, frequency, 0, cnst) ...
                 + cnst.jamming_ratio * cnst.amplitude * jamming_signal;
             % If carrier_interval_countdown is positive, keep sending
