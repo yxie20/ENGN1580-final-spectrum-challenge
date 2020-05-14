@@ -40,6 +40,9 @@ Observation: We noticed that as long as we change amplitude/energy with respect 
 #### Scheme 2 CDMA-like (Baseband)
 Our carriers are simply positive and negative 1 times amplitude.
 
+##### Features
+1. Burst communication with pseudo-random silent periods: We divide the total bits to send into several packets (bursts) to send. The silence period is a preset interval (calcualted based on `loop_max`) pluse random offset.
+
 ##### Parameter tuning
 `bit_interval = 1`  
 `total_num_packets = 8`: How many packets we divide the total bitstream into. Shouldn't really affect anything. But creates more resilience to randomness in the arena.  
@@ -48,17 +51,27 @@ All other parameters are the same as Scheme 1
 
 #### Scheme 3 CDMA-like (Baseband) with adaptive Ack/Nack (BEST SCORE)
 
-##### Parameter tuning
-`P_resend = 0.2;`: The probability of resending a bit. The higher, the more likely we resend a bit (which lowers P_e), but lower the carrier amplitude as well since we have limited power budget (which increases P_e).  
+##### Features
+1. Channel noise modeling: During the silence period, we model the channel as a Gaussian random variable. We calculate the same standard deviaion and mean for Ack/Nack and energy calculations.
 
-`total bits to send = 70000`: Given a specific energy budget, find the balance between bits to send (N in the final score) and accuracy (cross entropy). We empirically found that the maximum score is achieved by sending 70000 bits as shown in figure below.
+2. Ack/Nack: We exploited the fact
+
+Observation:
+
+3. Adaptive energy use with Ack/Nack: Based on the channel noise profile (mean and std), we dynamically adjust the following constants: `amplitude`, `resend_threshold`
+
+##### Parameter tuning
+`P_resend = 0.35;`: The probability of resending a bit. The higher, the more likely we resend a bit (which lowers P_e), but lower the carrier amplitude as well since we have limited power budget (which increases P_e).  
+
+`total bits to send = 70000`: Given a specific energy budget, find the balance between bits to send (N in the final score) and accuracy (cross entropy). We empirically found that the maximum score is achieved by sending 70000 bits as shown in figure below. In other words, if we consider the final result as the loss function, and given the constraints, we can climb to the achievable highest point on the surface when `N = 70000`. See figure below.
 
 <p align="center">
-  <img src="Report Images/param_tuning_N.png" width="200">
+  <img src="Report Images/param_tuning_N.png" width="600">
+  <img src="Report Images/score_formula.png" width="600">
 </p>
 
 <p align="center">
-  <img src="Report Images/" width="200">
+  <img src="Report Images/" width="600">
 </p>
 
 #### Scheme 4
